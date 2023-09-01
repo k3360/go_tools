@@ -9,13 +9,18 @@ import (
 )
 
 type RedisServer struct {
-	*redis.Client
 	host     string
 	port     int
 	password string
+	*redis.Client
 }
 
-func (s *RedisServer) Connect() (*RedisServer, error) {
+func New(host string, port int, password string) (*RedisServer, error) {
+	server := RedisServer{host: host, port: port, password: password}
+	return server.connect()
+}
+
+func (s *RedisServer) connect() (*RedisServer, error) {
 	redisAddr := fmt.Sprintf("%s:%d", s.host, s.port)
 	// 创建Redis客户端
 	s.Client = redis.NewClient(&redis.Options{

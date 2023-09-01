@@ -5,24 +5,29 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 type MongoServer struct {
 	MongoURI string
-	Database string
+	DbName   string
 	*mongo.Client
+	*mongo.Database
 }
 
-func (s *MongoServer) Connect() (*MongoServer, error) {
+func New(mongoURI, database string) (*MongoServer, error) {
+	server := MongoServer{MongoURI: mongoURI, DbName: database}
+	return server.connect()
+}
+
+func (s *MongoServer) connect() (*MongoServer, error) {
 	clientOptions := options.Client().ApplyURI(s.MongoURI)
 	// 连接MongoDB
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
-		log.Fatalf("Error connecting to MongoDB: %v", err)
 		return nil, err
 	}
 	s.Client = client
+	s.Database = client.Database(s.DbName)
 	//defer client.Disconnect(ctx)
 	return s, nil
 }
@@ -30,7 +35,7 @@ func (s *MongoServer) Connect() (*MongoServer, error) {
 // 批量插入Document
 func (s *MongoServer) InsertMany(tableName string, documents []interface{}) error {
 	// 获取集合引用
-	collection := s.Client.Database(s.Database).Collection(tableName)
+	collection := s.Database.Collection(tableName)
 	// 插入数据
 	_, err := collection.InsertMany(context.Background(), documents)
 	return err
@@ -38,7 +43,7 @@ func (s *MongoServer) InsertMany(tableName string, documents []interface{}) erro
 
 // 插入一条Document
 func (s *MongoServer) InsertOne(tableName string, document interface{}) error {
-	collection := s.Client.Database(s.Database).Collection(tableName)
+	collection := s.Database.Collection(tableName)
 	// 插入数据
 	_, err := collection.InsertOne(context.Background(), document)
 	return err
@@ -46,7 +51,7 @@ func (s *MongoServer) InsertOne(tableName string, document interface{}) error {
 
 // 全量查询
 func (s *MongoServer) FindMany(tableName string, filter bson.M) ([]bson.Raw, error) {
-	collection := s.Client.Database(s.Database).Collection(tableName)
+	collection := s.Database.Collection(tableName)
 	// 查询数据
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
@@ -62,7 +67,7 @@ func (s *MongoServer) FindMany(tableName string, filter bson.M) ([]bson.Raw, err
 
 // 查询一条
 func (s *MongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error) {
-	collection := s.Client.Database(s.Database).Collection(tableName)
+	collection := s.Database.Collection(tableName)
 	// 查询数据
 	res := collection.FindOne(context.Background(), filter)
 	bytes, err := res.DecodeBytes()
@@ -78,21 +83,20 @@ func (s *MongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error)
 
 // 只更新一条
 func (s *MongoServer) UpdateOne(tableName string, update bson.M, filter bson.M) error {
-	collection := s.Client.Database(s.Database).Collection(tableName)
+	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
 
 // 全量更新
 func (s *MongoServer) UpdateMany(tableName string, update bson.M, filter bson.M) error {
-	collection := s.Client.Database(s.Database).Collection(tableName)
+	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateMany(context.Background(), filter, update)
 	return err
 }
 
 // 统计条数
 func (s *MongoServer) Count(tableName string, filter bson.M) (int64, error) {
-	collection := s.Client.Database(s.Database).Collection(tableName)
-
+	collection := s.Database.Collection(tableName)
 	return collection.CountDocuments(context.Background(), filter)
 }
