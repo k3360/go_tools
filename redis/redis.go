@@ -9,16 +9,19 @@ import (
 )
 
 type RedisServer struct {
-	Client *redis.Client
+	*redis.Client
+	host     string
+	port     int
+	password string
 }
 
 func (s *RedisServer) Connect() (*RedisServer, error) {
-	redisAddr := fmt.Sprintf("%s:%d", host, port)
+	redisAddr := fmt.Sprintf("%s:%d", s.host, s.port)
 	// 创建Redis客户端
 	s.Client = redis.NewClient(&redis.Options{
 		Addr:     redisAddr,
-		Password: password, // 验证密码
-		DB:       0,        // Redis槽
+		Password: s.password, // 验证密码
+		DB:       0,          // Redis槽
 	})
 	return s, nil
 }
