@@ -53,23 +53,10 @@ func (s *mongoServer) InsertOne(tableName string, document interface{}) error {
 
 // 插入一条数据，并返回插入的自增ID
 func (s *mongoServer) InsertOneAndId(tableName string, document interface{}) (int64, error) {
-	s.IdLock.Lock()
-	// 获取新自增ID
-	var autoId int64
-	autoCollection := s.Database.Collection("AutoIncreaseId")
-	row, err := autoCollection.FindOneAndUpdate(context.Background(), bson.M{"_id": tableName}, bson.M{"$inc": bson.M{"value": 1}}).DecodeBytes()
-	if err != nil && err == mongo.ErrNoDocuments {
-		// 插入第一条自增ID
-		err = s.InsertOne("AutoIncreaseId", autoIncreaseId{tableName, 1})
-		if err != nil {
-			s.IdLock.Unlock()
-			return 0, err
-		}
-		autoId = 1
-	} else {
-		autoId = row.Lookup("value").Int64() + 1
+	autoId, err := s.getAutoIncreaseId(tableName)
+	if err != nil {
+		return 0, err
 	}
-	s.IdLock.Unlock()
 	// 保存数据
 	collection := s.Database.Collection(tableName)
 	filter := bson.M{"id": autoId}
@@ -82,6 +69,24 @@ func (s *mongoServer) InsertOneAndId(tableName string, document interface{}) (in
 		return 0, err
 	}
 	return autoId, err
+}
+
+// 获取新自增ID
+func (s *mongoServer) getAutoIncreaseId(tableName string) (int64, error) {
+	s.IdLock.Lock()
+	defer s.IdLock.Unlock()
+	autoCollection := s.Database.Collection("AutoIncreaseId")
+	row, err := autoCollection.FindOneAndUpdate(context.Background(), bson.M{"_id": tableName}, bson.M{"$inc": bson.M{"value": 1}}).DecodeBytes()
+	if err != nil && err == mongo.ErrNoDocuments {
+		// 插入第一条自增ID
+		err = s.InsertOne("AutoIncreaseId", autoIncreaseId{tableName, 1})
+		if err != nil {
+			return 0, err
+		}
+		return 1, nil
+	}
+	autoId := row.Lookup("value").Int64() + 1
+	return autoId, nil
 }
 
 // 全量查询
