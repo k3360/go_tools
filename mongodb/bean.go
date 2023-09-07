@@ -1,4 +1,4 @@
-package mongodb
+package _mongo
 
 type autoIncreaseId struct {
 	Key   string `bson:"_id"`
