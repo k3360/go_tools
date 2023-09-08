@@ -12,11 +12,12 @@ type RedisServer struct {
 	host     string
 	port     int
 	password string
+	slot     int
 	*redis.Client
 }
 
-func New(host string, port int, password string) (*RedisServer, error) {
-	server := RedisServer{host: host, port: port, password: password}
+func New(host string, port int, password string, slot int) (*RedisServer, error) {
+	server := RedisServer{host: host, port: port, password: password, slot: slot}
 	return server.connect()
 }
 
@@ -26,7 +27,7 @@ func (s *RedisServer) connect() (*RedisServer, error) {
 	s.Client = redis.NewClient(&redis.Options{
 		Addr:     redisAddr,
 		Password: s.password, // 验证密码
-		DB:       0,          // Redis槽
+		DB:       s.slot,     // Redis槽
 	})
 	return s, nil
 }

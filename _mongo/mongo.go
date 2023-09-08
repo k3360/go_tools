@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-type mongoServer struct {
+type MongoServer struct {
 	MongoURI string
 	DbName   string
 	*mongo.Client
@@ -16,12 +16,12 @@ type mongoServer struct {
 	IdLock sync.Mutex
 }
 
-func New(mongoURI, database string) (*mongoServer, error) {
-	server := mongoServer{MongoURI: mongoURI, DbName: database}
+func New(mongoURI, database string) (*MongoServer, error) {
+	server := MongoServer{MongoURI: mongoURI, DbName: database}
 	return server.connect()
 }
 
-func (s *mongoServer) connect() (*mongoServer, error) {
+func (s *MongoServer) connect() (*MongoServer, error) {
 	clientOptions := options.Client().ApplyURI(s.MongoURI)
 	// 连接MongoDB
 	client, err := mongo.Connect(context.Background(), clientOptions)
@@ -35,7 +35,7 @@ func (s *mongoServer) connect() (*mongoServer, error) {
 }
 
 // 批量插入Document
-func (s *mongoServer) InsertMany(tableName string, documents []interface{}) error {
+func (s *MongoServer) InsertMany(tableName string, documents []interface{}) error {
 	// 获取集合引用
 	collection := s.Database.Collection(tableName)
 	// 插入数据
@@ -44,7 +44,7 @@ func (s *mongoServer) InsertMany(tableName string, documents []interface{}) erro
 }
 
 // 插入一条Document
-func (s *mongoServer) InsertOne(tableName string, document interface{}) error {
+func (s *MongoServer) InsertOne(tableName string, document interface{}) error {
 	collection := s.Database.Collection(tableName)
 	// 插入数据
 	_, err := collection.InsertOne(context.Background(), document)
@@ -52,7 +52,7 @@ func (s *mongoServer) InsertOne(tableName string, document interface{}) error {
 }
 
 // 插入一条数据，并返回插入的自增ID
-func (s *mongoServer) InsertOneAndId(tableName string, document interface{}) (int64, error) {
+func (s *MongoServer) InsertOneAndId(tableName string, document interface{}) (int64, error) {
 	autoId, err := s.getAutoIncreaseId(tableName)
 	if err != nil {
 		return 0, err
@@ -72,7 +72,7 @@ func (s *mongoServer) InsertOneAndId(tableName string, document interface{}) (in
 }
 
 // 获取新自增ID
-func (s *mongoServer) getAutoIncreaseId(tableName string) (int64, error) {
+func (s *MongoServer) getAutoIncreaseId(tableName string) (int64, error) {
 	s.IdLock.Lock()
 	defer s.IdLock.Unlock()
 	autoCollection := s.Database.Collection("AutoIncreaseId")
@@ -90,7 +90,7 @@ func (s *mongoServer) getAutoIncreaseId(tableName string) (int64, error) {
 }
 
 // 全量查询
-func (s *mongoServer) FindMany(tableName string, filter bson.M) ([]bson.Raw, error) {
+func (s *MongoServer) FindMany(tableName string, filter bson.M) ([]bson.Raw, error) {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	cursor, err := collection.Find(context.Background(), filter)
@@ -106,7 +106,7 @@ func (s *mongoServer) FindMany(tableName string, filter bson.M) ([]bson.Raw, err
 }
 
 // 查询一条
-func (s *mongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error) {
+func (s *MongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error) {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	res := collection.FindOne(context.Background(), filter)
@@ -122,21 +122,21 @@ func (s *mongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error)
 }
 
 // 只更新一条
-func (s *mongoServer) UpdateOne(tableName string, update bson.M, filter bson.M) error {
+func (s *MongoServer) UpdateOne(tableName string, update bson.M, filter bson.M) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
 
 // 全量更新
-func (s *mongoServer) UpdateMany(tableName string, update bson.M, filter bson.M) error {
+func (s *MongoServer) UpdateMany(tableName string, update bson.M, filter bson.M) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateMany(context.Background(), filter, update)
 	return err
 }
 
 // 统计条数
-func (s *mongoServer) Count(tableName string, filter bson.M) (int64, error) {
+func (s *MongoServer) Count(tableName string, filter bson.M) (int64, error) {
 	collection := s.Database.Collection(tableName)
 	return collection.CountDocuments(context.Background(), filter)
 }
