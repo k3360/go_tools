@@ -1,0 +1,55 @@
+package _time
+
+import (
+	"log"
+	"time"
+)
+
+// 当前时间
+func Now() time.Time {
+	locTime := time.Now()
+	loc, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		log.Println("时间本地化失败", err)
+	} else {
+		locTime = locTime.In(loc)
+	}
+	return locTime
+}
+
+// 当前时间字符串
+func NowString() string {
+	return Now().Format("2006-01-02 15:04:05")
+}
+
+// 当前时间 + 指定时间
+func NowAdd(d time.Duration) time.Time {
+	return Now().Add(d)
+}
+
+// 当前时间 + 指定时间 的字符串
+func NowAddString(d time.Duration) string {
+	return NowAdd(d).Format("2006-01-02 15:04:05")
+}
+
+// 时间戳转字符串
+func TimestampToString(millisecond int64) string {
+	t := time.Unix(0, millisecond*int64(time.Millisecond))
+	return t.Format("2006-01-02 15:04:05")
+}
+
+// 字符串转时间戳
+func StringToTimestamp(datetime string) (int64, error) {
+	loc, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		return 0, err
+	}
+	// 使用 time.ParseInLocation 解析该字符串
+	t, err := time.ParseInLocation("2006-01-02 15:04:05", datetime, loc)
+	if err != nil {
+		return 0, err
+	}
+	// 获取毫秒时间戳
+	milliseconds := t.UnixNano() / int64(time.Millisecond)
+	return milliseconds, nil
+}
