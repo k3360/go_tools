@@ -19,7 +19,7 @@ func Now() time.Time {
 
 // 当前时间字符串
 func NowString() string {
-	return Now().Format("2006-01-02 15:04:05")
+	return Now().Format(time.DateTime)
 }
 
 // 当前时间 + 指定时间
@@ -29,13 +29,13 @@ func NowAdd(d time.Duration) time.Time {
 
 // 当前时间 + 指定时间 的字符串
 func NowAddString(d time.Duration) string {
-	return NowAdd(d).Format("2006-01-02 15:04:05")
+	return NowAdd(d).Format(time.DateTime)
 }
 
 // 时间戳转字符串
 func TimestampToString(millisecond int64) string {
 	t := time.Unix(0, millisecond*int64(time.Millisecond))
-	return t.Format("2006-01-02 15:04:05")
+	return t.Format(time.DateTime)
 }
 
 // 字符串转时间戳
@@ -45,7 +45,7 @@ func StringToTimestamp(datetime string) (int64, error) {
 		return 0, err
 	}
 	// 使用 time.ParseInLocation 解析该字符串
-	t, err := time.ParseInLocation("2006-01-02 15:04:05", datetime, loc)
+	t, err := time.ParseInLocation(time.DateTime, datetime, loc)
 	if err != nil {
 		return 0, err
 	}
