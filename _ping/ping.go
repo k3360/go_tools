@@ -15,7 +15,7 @@ func NewAverage(ip string, len int) (time.Duration, error) {
 		return 0, err
 	}
 	pinger.Count = len
-	pinger.Timeout = time.Second * time.Duration(len+3)
+	pinger.Timeout = time.Second * time.Duration(len+2)
 	pinger.OnRecv = func(pkt *ping.Packet) {
 		rNum++
 		rTime += pkt.Rtt
