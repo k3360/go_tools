@@ -21,6 +21,9 @@ func NewAverage(ip string, len int) (time.Duration, error) {
 		rTime += pkt.Rtt
 	}
 	pinger.OnFinish = func(stats *ping.Statistics) {
+		if rNum == 0 {
+			return
+		}
 		delayed = rTime / time.Duration(rNum)
 	}
 	err = pinger.Run()
