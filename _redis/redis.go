@@ -63,3 +63,21 @@ func (s *RedisServer) Delete(key string) bool {
 	}
 	return true
 }
+
+func (s *RedisServer) SCard(key string) int64 {
+	result, err := s.Client.SCard(context.Background(), key).Result()
+	if err != nil {
+		log.Fatal(err)
+		return 0
+	}
+	return result
+}
+
+func (s *RedisServer) SPopInt64(key string) int64 {
+	i, err := s.Client.SPop(context.Background(), key).Int64()
+	if err != nil {
+		log.Fatal(err)
+		return 0
+	}
+	return i
+}
