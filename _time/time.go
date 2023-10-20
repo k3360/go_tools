@@ -34,8 +34,12 @@ func NowAddString(d time.Duration) string {
 
 // 时间戳转字符串
 func TimestampToString(millisecond int64) string {
-	t := time.Unix(0, millisecond*int64(time.Millisecond))
-	return t.Format(time.DateTime)
+	location, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		return ""
+	}
+	localTime := time.Unix(0, millisecond*int64(time.Millisecond)).In(location)
+	return localTime.Format(time.DateTime)
 }
 
 // 字符串转时间戳
