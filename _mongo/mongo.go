@@ -90,10 +90,10 @@ func (s *MongoServer) getAutoIncreaseId(tableName string) (int64, error) {
 }
 
 // 全量查询
-func (s *MongoServer) FindMany(tableName string, filter bson.M) ([]bson.Raw, error) {
+func (s *MongoServer) FindMany(tableName string, filter bson.M, opts ...*options.FindOptions) ([]bson.Raw, error) {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
-	cursor, err := collection.Find(context.Background(), filter)
+	cursor, err := collection.Find(context.Background(), filter, opts...)
 	if err != nil {
 		return nil, err
 	}
