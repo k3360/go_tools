@@ -81,3 +81,31 @@ func (s *RedisServer) SPopInt64(key string) int64 {
 	}
 	return i
 }
+
+// 获取SET集合中的所有值，以字符串数组返回
+func (s *RedisServer) SMembers(key string) []string {
+	i, err := s.Client.SMembers(context.Background(), key).Result()
+	if err != nil {
+		log.Fatal(err)
+		return []string{}
+	}
+	return i
+}
+
+// 向SET集合添加新值
+func (s *RedisServer) SAdd(key string, value interface{}) bool {
+	err := s.Client.SAdd(context.Background(), key, value).Err()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// 设置过期时间
+func (s *RedisServer) Expire(key string, expiration time.Duration) bool {
+	err := s.Client.Expire(context.Background(), key, expiration).Err()
+	if err != nil {
+		return false
+	}
+	return true
+}
