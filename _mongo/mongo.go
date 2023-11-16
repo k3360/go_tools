@@ -122,20 +122,10 @@ func (s *MongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error)
 }
 
 // 查询一条
-func (s *MongoServer) FindOneToObject(tableName string, filter bson.M, a *interface{}) error {
+func (s *MongoServer) FindOneResult(tableName string, filter bson.M) *mongo.SingleResult {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
-	err := collection.FindOne(context.Background(), filter).Decode(a)
-	return err
-	//bytes, err := res.DecodeBytes()
-	//if err != nil {
-	//	if err == mongo.ErrNoDocuments {
-	//		return nil, nil
-	//	} else {
-	//		return nil, err
-	//	}
-	//}
-	//return bytes, err
+	return collection.FindOne(context.Background(), filter)
 }
 
 // 只更新一条
