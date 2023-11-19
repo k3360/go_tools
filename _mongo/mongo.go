@@ -112,11 +112,11 @@ func (s *MongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error)
 	res := collection.FindOne(context.Background(), filter)
 	bytes, err := res.DecodeBytes()
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return nil, nil
-		} else {
-			return nil, err
-		}
+		//if err == mongo.ErrNoDocuments {
+		//	return nil, nil
+		//} else {
+		return nil, err
+		//}
 	}
 	return bytes, err
 }
