@@ -147,3 +147,17 @@ func (s *MongoServer) Count(tableName string, filter bson.M) (int64, error) {
 	collection := s.Database.Collection(tableName)
 	return collection.CountDocuments(context.Background(), filter)
 }
+
+// 删除一条数据
+func (s *MongoServer) DeleteOne(tableName string, filter bson.M) error {
+	collection := s.Database.Collection(tableName)
+	_, err := collection.DeleteOne(context.Background(), filter)
+	return err
+}
+
+// 全量删除数据
+func (s *MongoServer) DeleteMany(tableName string, filter bson.M) error {
+	collection := s.Database.Collection(tableName)
+	_, err := collection.DeleteMany(context.Background(), filter)
+	return err
+}
