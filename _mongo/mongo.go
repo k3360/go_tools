@@ -90,26 +90,23 @@ func (s *MongoServer) getAutoIncreaseId(tableName string) (int64, error) {
 }
 
 // 全量查询
-func (s *MongoServer) FindMany(tableName string, filter bson.M, opts ...*options.FindOptions) ([]bson.Raw, error) {
+func (s *MongoServer) FindMany(tableName string, filter bson.M, opts ...*options.FindOptions) []bson.Raw {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	cursor, err := collection.Find(context.Background(), filter, opts...)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 	// 转为切片
 	var raws []bson.Raw
 	for cursor.Next(context.Background()) {
 		raws = append(raws, cursor.Current)
 	}
-	if raws == nil || len(raws) == 0 {
-		return nil, mongo.ErrNoDocuments
-	}
-	return raws, nil
+	return raws
 }
 
 // 查询一条
-func (s *MongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error) {
+func (s *MongoServer) FindOne(tableName string, filter bson.M) bson.Raw {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	res := collection.FindOne(context.Background(), filter)
@@ -118,10 +115,10 @@ func (s *MongoServer) FindOne(tableName string, filter bson.M) (bson.Raw, error)
 		//if err == mongo.ErrNoDocuments {
 		//	return nil, nil
 		//} else {
-		return nil, err
+		return nil
 		//}
 	}
-	return bytes, err
+	return bytes
 }
 
 // 查询一条
