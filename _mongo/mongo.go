@@ -161,3 +161,19 @@ func (s *MongoServer) DeleteMany(tableName string, filter bson.M) error {
 	_, err := collection.DeleteMany(context.Background(), filter)
 	return err
 }
+
+// 聚合查询
+func (s *MongoServer) Aggregate(tableName string, pipeline interface{}, opts ...*options.AggregateOptions) []bson.Raw {
+	collection := s.Database.Collection(tableName)
+	// 查询数据
+	cursor, err := collection.Aggregate(context.Background(), pipeline, opts...)
+	if err != nil {
+		return nil
+	}
+	// 转为切片
+	var raws []bson.Raw
+	for cursor.Next(context.Background()) {
+		raws = append(raws, cursor.Current)
+	}
+	return raws
+}
