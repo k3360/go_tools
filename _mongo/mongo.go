@@ -102,6 +102,9 @@ func (s *MongoServer) FindMany(tableName string, filter bson.M, opts ...*options
 	for cursor.Next(context.Background()) {
 		raws = append(raws, cursor.Current)
 	}
+	if raws == nil || len(raws) == 0 {
+		return nil, mongo.ErrNoDocuments
+	}
 	return raws, nil
 }
 
