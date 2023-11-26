@@ -93,8 +93,8 @@ func (s *RedisServer) SMembers(key string) []string {
 }
 
 // 向SET集合添加新值
-func (s *RedisServer) SAdd(key string, value interface{}) bool {
-	err := s.Client.SAdd(context.Background(), key, value).Err()
+func (s *RedisServer) SAdd(key string, members ...interface{}) bool {
+	err := s.Client.SAdd(context.Background(), key, members...).Err()
 	if err != nil {
 		return false
 	}
@@ -102,8 +102,8 @@ func (s *RedisServer) SAdd(key string, value interface{}) bool {
 }
 
 // 移除SET集合中一个或多个成员
-func (s *RedisServer) SRem(key string) bool {
-	err := s.Client.SRem(context.Background(), key).Err()
+func (s *RedisServer) SRem(key string, members ...interface{}) bool {
+	err := s.Client.SRem(context.Background(), key, members...).Err()
 	if err != nil {
 		return false
 	}
