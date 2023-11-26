@@ -82,7 +82,7 @@ func (s *RedisServer) SPopInt64(key string) int64 {
 	return i
 }
 
-// 获取SET集合中的所有值，以字符串数组返回
+// 获取Set集合中的所有值，以字符串数组返回
 func (s *RedisServer) SMembers(key string) []string {
 	i, err := s.Client.SMembers(context.Background(), key).Result()
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *RedisServer) SMembers(key string) []string {
 	return i
 }
 
-// 向SET集合添加新值
+// 向Set集合添加新值
 func (s *RedisServer) SAdd(key string, members ...interface{}) bool {
 	err := s.Client.SAdd(context.Background(), key, members...).Err()
 	if err != nil {
@@ -101,7 +101,7 @@ func (s *RedisServer) SAdd(key string, members ...interface{}) bool {
 	return true
 }
 
-// 移除SET集合中一个或多个成员
+// 移除Set集合中一个或多个成员
 func (s *RedisServer) SRem(key string, members ...interface{}) bool {
 	err := s.Client.SRem(context.Background(), key, members...).Err()
 	if err != nil {
@@ -110,7 +110,7 @@ func (s *RedisServer) SRem(key string, members ...interface{}) bool {
 	return true
 }
 
-// 移除并返回SET集合中的一个随机元素
+// 移除并返回Set集合中的一个随机元素
 func (s *RedisServer) SPop(key string) string {
 	val, err := s.Client.SPop(context.Background(), key).Result()
 	if err != nil {
@@ -122,8 +122,26 @@ func (s *RedisServer) SPop(key string) string {
 // 设置过期时间
 func (s *RedisServer) Expire(key string, expiration time.Duration) bool {
 	err := s.Client.Expire(context.Background(), key, expiration).Err()
+	return err == nil
+}
+
+// 将一个或多个值插入到List列表头部
+func (s *RedisServer) LPush(key string, values ...interface{}) bool {
+	err := s.Client.LPush(context.Background(), key, values).Err()
+	return err == nil
+}
+
+// 移除List列表的最后一个元素，返回值为移除的元素。
+func (s *RedisServer) RPop(key string) string {
+	val, err := s.Client.RPop(context.Background(), key).Result()
 	if err != nil {
-		return false
+		return ""
 	}
-	return true
+	return val
+}
+
+// 移除List列表元素
+func (s *RedisServer) LRem(key string, count int64, value interface{}) bool {
+	err := s.Client.LRem(context.Background(), key, count, value).Err()
+	return err == nil
 }
