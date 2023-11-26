@@ -101,6 +101,24 @@ func (s *RedisServer) SAdd(key string, value interface{}) bool {
 	return true
 }
 
+// 移除SET集合中一个或多个成员
+func (s *RedisServer) SRem(key string) bool {
+	err := s.Client.SRem(context.Background(), key).Err()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// 移除并返回SET集合中的一个随机元素
+func (s *RedisServer) SPop(key string) string {
+	val, err := s.Client.SPop(context.Background(), key).Result()
+	if err != nil {
+		return ""
+	}
+	return val
+}
+
 // 设置过期时间
 func (s *RedisServer) Expire(key string, expiration time.Duration) bool {
 	err := s.Client.Expire(context.Background(), key, expiration).Err()
