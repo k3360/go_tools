@@ -1,11 +1,26 @@
-package http
+package _http
+
+import (
+	"bufio"
+	"net/http"
+	"strings"
+)
+
+// BuffToRequest 通过buff，获取HTTP请求：http.Request
+func BuffToRequest(buff []byte) (*http.Request, error) {
+	// 创建字符串读取器
+	newReader := strings.NewReader(string(buff))
+	reader := bufio.NewReader(newReader)
+	// 从字符串读取器中解析请求
+	return http.ReadRequest(reader)
+}
 
 //
 //import (
 //	"bytes"
 //	"encoding/json"
 //	"io/ioutil"
-//	"net/http"
+//	"net/_http"
 //)
 //
 //// 定义一个接口
@@ -28,7 +43,7 @@ package http
 //	}
 //	body := bytes.NewBuffer(jsonData)
 //
-//	resp, err := http.Post(url, "application/json", body)
+//	resp, err := _http.Post(url, "application/json", body)
 //	if err != nil {
 //		return "", err
 //	}

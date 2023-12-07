@@ -51,7 +51,7 @@ func (s *MongoServer) InsertOne(tableName string, document interface{}) error {
 	return err
 }
 
-// 插入一条数据，并返回插入的自增ID
+// 插入一条数据，并返回插入的自增ID，注：自增ID需要手动加索引
 func (s *MongoServer) InsertOneAndId(tableName string, document interface{}) (int64, error) {
 	autoId, err := s.getAutoIncreaseId(tableName)
 	if err != nil {
