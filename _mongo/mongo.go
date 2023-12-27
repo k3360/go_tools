@@ -90,7 +90,7 @@ func (s *MongoServer) getAutoIncreaseId(tableName string) (int64, error) {
 }
 
 // 全量查询
-func (s *MongoServer) FindMany(tableName string, filter bson.M, opts ...*options.FindOptions) []bson.Raw {
+func (s *MongoServer) FindMany(tableName string, filter interface{}, opts ...*options.FindOptions) []bson.Raw {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	cursor, err := collection.Find(context.Background(), filter, opts...)
@@ -106,7 +106,7 @@ func (s *MongoServer) FindMany(tableName string, filter bson.M, opts ...*options
 }
 
 // 查询一条
-func (s *MongoServer) FindOne(tableName string, filter bson.M) bson.Raw {
+func (s *MongoServer) FindOne(tableName string, filter interface{}) bson.Raw {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	res := collection.FindOne(context.Background(), filter)
@@ -122,41 +122,41 @@ func (s *MongoServer) FindOne(tableName string, filter bson.M) bson.Raw {
 }
 
 // 查询一条
-func (s *MongoServer) FindOneResult(tableName string, filter bson.M) *mongo.SingleResult {
+func (s *MongoServer) FindOneResult(tableName string, filter interface{}) *mongo.SingleResult {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	return collection.FindOne(context.Background(), filter)
 }
 
 // 只更新一条
-func (s *MongoServer) UpdateOne(tableName string, update bson.M, filter bson.M) error {
+func (s *MongoServer) UpdateOne(tableName string, update interface{}, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
 
 // 全量更新
-func (s *MongoServer) UpdateMany(tableName string, update bson.M, filter bson.M) error {
+func (s *MongoServer) UpdateMany(tableName string, update interface{}, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateMany(context.Background(), filter, update)
 	return err
 }
 
 // 统计条数
-func (s *MongoServer) Count(tableName string, filter bson.M) (int64, error) {
+func (s *MongoServer) Count(tableName string, filter interface{}) (int64, error) {
 	collection := s.Database.Collection(tableName)
 	return collection.CountDocuments(context.Background(), filter)
 }
 
 // 删除一条数据
-func (s *MongoServer) DeleteOne(tableName string, filter bson.M) error {
+func (s *MongoServer) DeleteOne(tableName string, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.DeleteOne(context.Background(), filter)
 	return err
 }
 
 // 全量删除数据
-func (s *MongoServer) DeleteMany(tableName string, filter bson.M) error {
+func (s *MongoServer) DeleteMany(tableName string, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.DeleteMany(context.Background(), filter)
 	return err
