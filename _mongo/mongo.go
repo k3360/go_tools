@@ -209,7 +209,7 @@ func SetAutoId(document interface{}, id int64) error {
 	}
 	switch idField.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		idField.SetInt(id)
+		idField.SetUint(uint64(id))
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		idField.SetUint(uint64(id))
 	default:
