@@ -2,9 +2,11 @@ package _mongo
 
 import (
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"reflect"
 	"sync"
 )
 
@@ -52,7 +54,7 @@ func (s *MongoServer) InsertOne(tableName string, document interface{}) error {
 }
 
 // 插入一条数据，并返回插入的自增ID，注：自增ID需要手动加索引
-func (s *MongoServer) InsertOneAndId(tableName string, document interface{}) (int64, error) {
+func (s *MongoServer) InsertOneAndIdV2(tableName string, document interface{}) (int64, error) {
 	autoId, err := s.getAutoIncreaseId(tableName)
 	if err != nil {
 		return 0, err
@@ -68,6 +70,23 @@ func (s *MongoServer) InsertOneAndId(tableName string, document interface{}) (in
 	if err != nil {
 		return 0, err
 	}
+	return autoId, err
+}
+
+// 插入一条数据，并返回插入的自增ID，注：自增ID需要手动加索引，名称：Id
+func (s *MongoServer) InsertOneAndId(tableName string, document interface{}) (int64, error) {
+	autoId, err := s.getAutoIncreaseId(tableName)
+	if err != nil {
+		return 0, err
+	}
+	// 保存数据
+	collection := s.Database.Collection(tableName)
+	// 自增ID
+	err2 := SetAutoId(document, autoId)
+	if err2 != nil {
+		return 0, err2
+	}
+	_, err = collection.InsertOne(context.Background(), document)
 	return autoId, err
 }
 
@@ -176,4 +195,25 @@ func (s *MongoServer) Aggregate(tableName string, pipeline interface{}, opts ...
 		raws = append(raws, cursor.Current)
 	}
 	return raws
+}
+
+// 插入自增ID
+func SetAutoId(document interface{}, id int64) error {
+	value := reflect.ValueOf(document)
+	if value.Kind() != reflect.Ptr || value.Elem().Kind() != reflect.Struct {
+		return fmt.Errorf("document must be a pointer to a struct")
+	}
+	idField := value.Elem().FieldByName("Id")
+	if !idField.IsValid() || !idField.CanSet() {
+		return fmt.Errorf("id field is not accessible: <Id>")
+	}
+	switch idField.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		idField.SetInt(id)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		idField.SetUint(uint64(id))
+	default:
+		return fmt.Errorf("ID field has unsupported type")
+	}
+	return nil
 }
