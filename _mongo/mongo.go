@@ -18,6 +18,8 @@ type MongoServer struct {
 	IdLock sync.Mutex
 }
 
+type FindCallback func(cur *mongo.Cursor)
+
 func New(mongoURI, database string) (*MongoServer, error) {
 	server := MongoServer{MongoURI: mongoURI, DbName: database}
 	return server.connect()
@@ -36,7 +38,7 @@ func (s *MongoServer) connect() (*MongoServer, error) {
 	return s, nil
 }
 
-// 批量插入Document
+// InsertMany 批量插入Document
 func (s *MongoServer) InsertMany(tableName string, documents []interface{}) error {
 	// 获取集合引用
 	collection := s.Database.Collection(tableName)
@@ -45,7 +47,7 @@ func (s *MongoServer) InsertMany(tableName string, documents []interface{}) erro
 	return err
 }
 
-// 插入一条Document
+// InsertOne 插入一条Document
 func (s *MongoServer) InsertOne(tableName string, document interface{}) error {
 	collection := s.Database.Collection(tableName)
 	// 插入数据
@@ -53,7 +55,7 @@ func (s *MongoServer) InsertOne(tableName string, document interface{}) error {
 	return err
 }
 
-// 插入一条数据，并返回插入的自增ID，注：自增ID需要手动加索引
+// InsertOneAndIdV2 插入一条数据，并返回插入的自增ID，注：自增ID需要手动加索引
 func (s *MongoServer) InsertOneAndIdV2(tableName string, document interface{}) (int64, error) {
 	autoId, err := s.getAutoIncreaseId(tableName)
 	if err != nil {
@@ -73,7 +75,7 @@ func (s *MongoServer) InsertOneAndIdV2(tableName string, document interface{}) (
 	return autoId, err
 }
 
-// 插入一条数据，并返回插入的自增ID，注：自增ID需要手动加索引，名称：Id
+// InsertOneAndId 插入一条数据，并返回插入的自增ID，注：自增ID需要手动加索引，名称：Id
 func (s *MongoServer) InsertOneAndId(tableName string, document interface{}) (int64, error) {
 	autoId, err := s.getAutoIncreaseId(tableName)
 	if err != nil {
@@ -108,7 +110,7 @@ func (s *MongoServer) getAutoIncreaseId(tableName string) (int64, error) {
 	return autoId, nil
 }
 
-// 全量查询
+// FindMany 全量查询
 func (s *MongoServer) FindMany(tableName string, filter interface{}, opts ...*options.FindOptions) []bson.Raw {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
@@ -124,7 +126,22 @@ func (s *MongoServer) FindMany(tableName string, filter interface{}, opts ...*op
 	return raws
 }
 
-// 查询一条
+// FindManyResult 全量查询，自己解析数据
+func (s *MongoServer) FindManyResult(tableName string, filter interface{}, callback FindCallback, opts ...*options.FindOptions) error {
+	collection := s.Database.Collection(tableName)
+	// 查询数据
+	cursor, err := collection.Find(context.Background(), filter, opts...)
+	if err != nil {
+		return err
+	}
+	// 转为切片
+	for cursor.Next(context.Background()) {
+		callback(cursor)
+	}
+	return nil
+}
+
+// FindOne 查询一条
 func (s *MongoServer) FindOne(tableName string, filter interface{}) bson.Raw {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
@@ -140,48 +157,48 @@ func (s *MongoServer) FindOne(tableName string, filter interface{}) bson.Raw {
 	return bytes
 }
 
-// 查询一条
+// FindOneResult 查询一条，自己解析数据
 func (s *MongoServer) FindOneResult(tableName string, filter interface{}) *mongo.SingleResult {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
 	return collection.FindOne(context.Background(), filter)
 }
 
-// 只更新一条
+// UpdateOne 只更新一条
 func (s *MongoServer) UpdateOne(tableName string, update interface{}, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateOne(context.Background(), filter, update)
 	return err
 }
 
-// 全量更新
+// UpdateMany 全量更新
 func (s *MongoServer) UpdateMany(tableName string, update interface{}, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.UpdateMany(context.Background(), filter, update)
 	return err
 }
 
-// 统计条数
+// Count 统计条数
 func (s *MongoServer) Count(tableName string, filter interface{}) (int64, error) {
 	collection := s.Database.Collection(tableName)
 	return collection.CountDocuments(context.Background(), filter)
 }
 
-// 删除一条数据
+// DeleteOne 删除一条数据
 func (s *MongoServer) DeleteOne(tableName string, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.DeleteOne(context.Background(), filter)
 	return err
 }
 
-// 全量删除数据
+// DeleteMany 全量删除数据
 func (s *MongoServer) DeleteMany(tableName string, filter interface{}) error {
 	collection := s.Database.Collection(tableName)
 	_, err := collection.DeleteMany(context.Background(), filter)
 	return err
 }
 
-// 聚合查询
+// Aggregate 聚合查询
 func (s *MongoServer) Aggregate(tableName string, pipeline interface{}, opts ...*options.AggregateOptions) []bson.Raw {
 	collection := s.Database.Collection(tableName)
 	// 查询数据
@@ -197,7 +214,7 @@ func (s *MongoServer) Aggregate(tableName string, pipeline interface{}, opts ...
 	return raws
 }
 
-// 插入自增ID
+// SetAutoId 插入自增ID
 func SetAutoId(document interface{}, id int64) error {
 	value := reflect.ValueOf(document)
 	if value.Kind() != reflect.Ptr || value.Elem().Kind() != reflect.Struct {
