@@ -2,6 +2,8 @@ package _http
 
 import (
 	"bufio"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -13,6 +15,27 @@ func BuffToRequest(buff []byte) (*http.Request, error) {
 	reader := bufio.NewReader(newReader)
 	// 从字符串读取器中解析请求
 	return http.ReadRequest(reader)
+}
+
+func Get(url string, param map[string]string) ([]byte, error) {
+	uri := ""
+	for key, val := range param {
+		if len(uri) == 0 {
+			uri += key + "=" + val
+		} else {
+			uri += "&" + key + "=" + val
+		}
+	}
+	resp, err := http.Get(fmt.Sprintf("%s?%s", url, uri))
+	if err != nil {
+		return []byte{}, err
+	}
+	defer resp.Body.Close()
+	body, err2 := ioutil.ReadAll(resp.Body)
+	if err2 != nil {
+		return body, err2
+	}
+	return body, nil
 }
 
 //
