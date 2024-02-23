@@ -16,3 +16,7 @@ func ToObject(value []byte, obj any) {
 		panic("Json解析为对象异常：" + err.Error())
 	}
 }
+
+func AnyToObject(value any, obj any) {
+	ToObject(ToJson(value), &obj)
+}
