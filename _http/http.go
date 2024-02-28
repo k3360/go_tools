@@ -2,7 +2,6 @@ package _http
 
 import (
 	"bufio"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -26,7 +25,10 @@ func Get(url string, param map[string]string) ([]byte, error) {
 			uri += "&" + key + "=" + val
 		}
 	}
-	resp, err := http.Get(fmt.Sprintf("%s?%s", url, uri))
+	if len(uri) > 0 {
+		url += "?" + uri
+	}
+	resp, err := http.Get(url)
 	if err != nil {
 		return []byte{}, err
 	}
