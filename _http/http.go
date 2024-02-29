@@ -2,6 +2,8 @@ package _http
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -38,6 +40,30 @@ func Get(url string, param map[string]string) ([]byte, error) {
 		return body, err2
 	}
 	return body, nil
+}
+
+func PostJson(url string, param []byte) ([]byte, error) {
+	req, err := http.NewRequest("POST", url, bytes.NewReader(param))
+	if err != nil {
+		return []byte{}, err
+	}
+	// 设置头信息
+	req.Header.Set("Content-Type", "application/json")
+	// 开始请求
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
+
+func PostJsonByMap(url string, param map[string]interface{}) ([]byte, error) {
+	jsonVal, err := json.Marshal(param)
+	if err != nil {
+		return []byte{}, err
+	}
+	return PostJson(url, jsonVal)
 }
 
 //
