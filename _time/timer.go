@@ -1,20 +1,16 @@
 package _time
 
 import (
-	"sync"
 	"time"
 )
 
 type TimerFunc func()
 
 func NewTimer(d time.Duration, timerFunc TimerFunc) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	ticker := time.NewTicker(d)
 	go func() {
+		ticker := time.NewTicker(d)
 		for range ticker.C {
 			timerFunc()
 		}
 	}()
-	wg.Wait()
 }
