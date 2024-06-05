@@ -23,6 +23,6 @@ func ToObject(value []byte, obj any) error {
 	return nil
 }
 
-func AnyToObject(value any, obj any) {
-	ToObject(ToJson(value), &obj)
+func AnyToObject(value any, obj any) error {
+	return ToObject(ToJson(value), obj)
 }
