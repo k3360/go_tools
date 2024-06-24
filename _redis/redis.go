@@ -125,7 +125,7 @@ func (s *RedisServer) Expire(key string, expiration time.Duration) bool {
 	return err == nil
 }
 
-// 将一个或多个值插入到List列表头部
+// 将一个或多个值插入 到 List列表的左侧
 func (s *RedisServer) LPush(key string, values ...interface{}) bool {
 	err := s.Client.LPush(context.Background(), key, values).Err()
 	return err == nil
@@ -143,5 +143,16 @@ func (s *RedisServer) RPop(key string) string {
 // 移除List列表元素
 func (s *RedisServer) LRem(key string, count int64, value interface{}) bool {
 	err := s.Client.LRem(context.Background(), key, count, value).Err()
+	return err == nil
+}
+
+// 统计 List列表 的个数
+func (s *RedisServer) LLen(key string) int64 {
+	return s.Client.LLen(context.Background(), key).Val()
+}
+
+// 将一个或多个值插入 到 List列表的右侧
+func (s *RedisServer) RPush(key string, values ...interface{}) bool {
+	err := s.Client.RPush(context.Background(), key, values).Err()
 	return err == nil
 }
