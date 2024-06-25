@@ -234,3 +234,14 @@ func SetAutoId(document interface{}, id int64) error {
 	}
 	return nil
 }
+
+func (s *MongoServer) FindOneAndUpdate(tableName string, update interface{}, filter interface{}, opts ...*options.FindOneAndUpdateOptions) bson.Raw {
+	collection := s.Database.Collection(tableName)
+	// 查询数据
+	res := collection.FindOneAndUpdate(context.Background(), filter, update, opts...)
+	bytes, err := res.DecodeBytes()
+	if err != nil {
+		return nil
+	}
+	return bytes
+}
