@@ -165,17 +165,15 @@ func (s *MongoServer) FindOneResult(tableName string, filter interface{}) *mongo
 }
 
 // UpdateOne 只更新一条
-func (s *MongoServer) UpdateOne(tableName string, update interface{}, filter interface{}) error {
+func (s *MongoServer) UpdateOne(tableName string, update interface{}, filter interface{}) (*mongo.UpdateResult, error) {
 	collection := s.Database.Collection(tableName)
-	_, err := collection.UpdateOne(context.Background(), filter, update)
-	return err
+	return collection.UpdateOne(context.Background(), filter, update)
 }
 
 // UpdateMany 全量更新
-func (s *MongoServer) UpdateMany(tableName string, update interface{}, filter interface{}) error {
+func (s *MongoServer) UpdateMany(tableName string, update interface{}, filter interface{}) (*mongo.UpdateResult, error) {
 	collection := s.Database.Collection(tableName)
-	_, err := collection.UpdateMany(context.Background(), filter, update)
-	return err
+	return collection.UpdateMany(context.Background(), filter, update)
 }
 
 // Count 统计条数
