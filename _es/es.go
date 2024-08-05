@@ -70,28 +70,29 @@ func (s *EsServer) AddMapping(indexName string, mapping string) error {
 	return err
 }
 
-// 插入一条数据
-func (s *EsServer) PutIndexOne(indexName string, id int64, documents interface{}) error {
+// 插入一条数据 无需自定义id可为空
+func (s *EsServer) PutIndexOne(indexName string, id string, documents interface{}) error {
 	// 保存文档到 Elasticsearch
-	_, err := s.Client.Index().
+	body := s.Client.Index().
 		Index(indexName).
 		Refresh("true").
-		Id(fmt.Sprintf("%d", id)).
-		BodyJson(documents).
-		Do(context.Background())
+		BodyJson(documents)
+	if id != "" {
+		body = body.Id(id)
+	}
+	_, err := body.Do(context.Background())
 	return err
 }
 
-func (s *EsServer) PutIndexMany(indexName string, documents map[int64]interface{}) (success []string, fDetail map[string]string, err error) {
+func (s *EsServer) PutIndexMany(indexName string, documents map[string]interface{}) (success []string, fDetail map[string]string, err error) {
 	// 保存文档到 Elasticsearch
 	req := s.Client.Bulk().Index(indexName)
 	for id, item := range documents {
-		if id != 0 {
-			fmt.Printf("正在导入ES数据索引:index:%s Id:%d \n", indexName, id)
-			doc := elastic.NewBulkIndexRequest().Id(fmt.Sprintf("%d", id)).Doc(item)
+		if id != "" {
+			fmt.Printf("正在导入ES数据索引:index:%s Id:%s \n", indexName, id)
+			doc := elastic.NewBulkIndexRequest().Id(id).Doc(item)
 			req.Add(doc)
 		}
-
 	}
 
 	bulkResponse, err := req.Refresh("true").Do(context.Background())
@@ -124,26 +125,22 @@ func (s *EsServer) PutIndexMany(indexName string, documents map[int64]interface{
 }
 
 // UpdateUserById ... 根据id新增或更新数据(单条) 仅更新传入的字段
-func (s *EsServer) UpdateUserById(indexName string, id int64, update interface{}) (err error) {
-	res, err := s.Client.Update().
+func (s *EsServer) UpdateUserById(indexName string, id string, update interface{}) (err error) {
+	_, err = s.Client.Update().
 		Index(indexName).
-		Id(fmt.Sprintf("%d", id)).
+		Id(id).
 		Refresh("true").
 		// update为结构体或map, 需注意的是如果使用结构体零值也会去更新原记录
 		Upsert(update).
 		// true 无则插入, 有则更新, 设置为false时记录不存在将报错
 		DocAsUpsert(true).
 		Do(context.Background())
-	if err != nil {
-		return err
-	}
-	fmt.Printf("update age %s %#v \n", res.Result, res)
-	return nil
+	return err
 }
 
 // DeleteUserById 指定id删除数据  DELETE /user/_doc/2
-func (s *EsServer) DeleteUserById(indexName string, id int64) (err error) {
-	deleteResult, err := s.Client.Delete().Index(indexName).Id(fmt.Sprintf("%d", id)).Refresh("true").Do(context.Background())
+func (s *EsServer) DeleteUserById(indexName string, id string) (err error) {
+	deleteResult, err := s.Client.Delete().Index(indexName).Id(id).Refresh("true").Do(context.Background())
 	if err != nil {
 		return err
 	}
@@ -160,8 +157,8 @@ func (s *EsServer) DeleteUserById(indexName string, id int64) (err error) {
 }
 
 // RowExists 判断id 的数据是否存在
-func (s *EsServer) RowExists(indexName string, id int64) bool {
-	exists, err := s.Client.Exists().Index(indexName).Id(fmt.Sprintf("%d", id)).Do(context.TODO())
+func (s *EsServer) RowExists(indexName string, id string) bool {
+	exists, err := s.Client.Exists().Index(indexName).Id(id).Do(context.TODO())
 	if err != nil {
 		fmt.Printf("err---->:%v \n", err)
 		return false
@@ -200,8 +197,8 @@ func (s *EsServer) IndexAnalyze(analyzer string, text string) ([]string, error) 
 }
 
 // GetUserInfo ...  GET users/_doc/1 获取指定id的数据
-func (s *EsServer) GetInfoOne(indexName string, id int64) ([]byte, error) {
-	get, err := s.Client.Get().Index(indexName).Id(fmt.Sprintf("%d", id)).Do(context.Background())
+func (s *EsServer) GetInfoOne(indexName string, id string) ([]byte, error) {
+	get, err := s.Client.Get().Index(indexName).Id(id).Do(context.Background())
 	if err != nil {
 		return nil, err
 	}
