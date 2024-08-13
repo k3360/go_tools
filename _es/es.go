@@ -36,6 +36,10 @@ type FindData struct {
 	Id  string //唯一值，利用她进行增删改查
 	Raw []byte //对应的值
 }
+type HitsResult struct {
+	TotalQty  int64      //条件搜索出来的总数量
+	FindDatas []FindData //条件搜索出来的分页数据
+}
 
 type failedDetail struct {
 	Ids         []string
@@ -167,17 +171,18 @@ func (s *EsServer) RowExists(indexName string, id string) bool {
 }
 
 // skip:第几页，pageSize 返回几条，几条 elastic.NewMatchQuery(fieldName, text)
-func (s *EsServer) WorkSegmentQuery(indexName string, filter *elastic.MatchQuery, page int, pageSize int) ([]FindData, error) {
+func (s *EsServer) WorkSegmentQuery(indexName string, filter *elastic.MatchQuery, page int, pageSize int) (*HitsResult, error) {
 	searchResult, err := s.Client.Search(indexName).Query(filter).From((page - 1) * pageSize).Size(pageSize).Do(context.Background())
 	if err != nil {
 		return nil, err
 	}
 	if searchResult.Hits.TotalHits.Value > 0 {
-		var raws []FindData
+		var hitsResult HitsResult
 		for _, hit := range searchResult.Hits.Hits {
-			raws = append(raws, FindData{hit.Id, hit.Source})
+			hitsResult.FindDatas = append(hitsResult.FindDatas, FindData{hit.Id, hit.Source})
 		}
-		return raws, nil
+		hitsResult.TotalQty = searchResult.Hits.TotalHits.Value
+		return &hitsResult, nil
 	}
 	// 处理没有匹配结果的情况
 	return nil, fmt.Errorf("没有查询到数据")
