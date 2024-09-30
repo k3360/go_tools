@@ -1,6 +1,10 @@
 package _string
 
-import "github.com/wangbin/jiebago"
+import (
+	"github.com/wangbin/jiebago"
+	"runtime"
+	"strings"
+)
 
 type WordServer struct {
 	Seg *jiebago.Segmenter
@@ -9,7 +13,8 @@ type WordServer struct {
 func NewWordServer() (*WordServer, error) {
 	server := &WordServer{}
 	server.Seg = &jiebago.Segmenter{}
-	err := server.Seg.LoadDictionary("_string/jieba/dict.txt") //初始化分词的字典，可手动修改该文件
+	_, file, _, _ := runtime.Caller(0)
+	err := server.Seg.LoadDictionary(strings.Replace(file, "dict.txt", "", -1) + "dict.txt")
 	if err != nil {
 		return nil, err
 	}
