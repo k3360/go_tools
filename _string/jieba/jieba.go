@@ -1,4 +1,4 @@
-package _string
+package jieba
 
 import "github.com/wangbin/jiebago"
 
@@ -6,13 +6,14 @@ type WordServer struct {
 	Seg *jiebago.Segmenter
 }
 
-func (s *WordServer) NewWordServer() (*WordServer, error) {
-	s.Seg = &jiebago.Segmenter{}
-	err := s.Seg.LoadDictionary("_string/jieba/dict.txt") //初始化分词的字典，可手动修改该文件
+func NewWordServer() (*WordServer, error) {
+	server := &WordServer{}
+	server.Seg = &jiebago.Segmenter{}
+	err := server.Seg.LoadDictionary("_string/jieba/dict.txt") //初始化分词的字典，可手动修改该文件
 	if err != nil {
 		return nil, err
 	}
-	return s, nil
+	return server, nil
 }
 
 func (s *WordServer) Search(word string, hmm bool) []string {
