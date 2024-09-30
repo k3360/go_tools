@@ -14,7 +14,7 @@ func NewWordServer() (*WordServer, error) {
 	server := &WordServer{}
 	server.Seg = &jiebago.Segmenter{}
 	_, file, _, _ := runtime.Caller(0)
-	err := server.Seg.LoadDictionary(strings.Replace(file, "dict.txt", "", -1) + "dict.txt")
+	err := server.Seg.LoadDictionary(strings.Replace(file, "jieba.go", "", -1) + "dict.txt")
 	if err != nil {
 		return nil, err
 	}
