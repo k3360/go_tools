@@ -15,7 +15,7 @@ func WeightSelector(items []WeightItem) interface{} {
 	for _, item := range items {
 		totalWeight += item.Weight
 	}
-	r := rand.Int() * totalWeight
+	r := rand.Intn(totalWeight) + 1
 	var cumulativeWeight int
 	for _, item := range items {
 		cumulativeWeight += item.Weight
