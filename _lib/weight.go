@@ -2,7 +2,6 @@ package _lib
 
 import (
 	"math/rand"
-	"sort"
 )
 
 type WeightItem struct {
@@ -12,16 +11,17 @@ type WeightItem struct {
 
 // WeightSelector 权重选择器，返回：WeightItem.Item
 func WeightSelector(items []WeightItem) interface{} {
-	itemArray := make([]int, len(items))
-	count := 0
-	for i, item := range items {
-		count += item.Weight
-		itemArray[i] = count
+	totalWeight := 0
+	for _, item := range items {
+		totalWeight += item.Weight
 	}
-	r := rand.Intn(count) + 1
-	pos := sort.SearchInts(itemArray, r)
-	if pos < len(itemArray) {
-		return items[pos].Item
+	r := rand.Int() * totalWeight
+	var cumulativeWeight int
+	for _, item := range items {
+		cumulativeWeight += item.Weight
+		if r <= cumulativeWeight {
+			return item.Item
+		}
 	}
 	return items[0].Item
 }
