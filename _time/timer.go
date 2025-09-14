@@ -14,3 +14,13 @@ func NewTimer(d time.Duration, timerFunc TimerFunc) {
 		}
 	}()
 }
+
+func NewTimerAndRun(d time.Duration, timerFunc TimerFunc) {
+	go func() {
+		timerFunc()
+		ticker := time.NewTicker(d)
+		for range ticker.C {
+			timerFunc()
+		}
+	}()
+}
